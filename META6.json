@@ -1,0 +1,16 @@
+{
+  "name" : "Algorithm::Trie::libdatrie",
+  "source-url" : "",
+  "perl" : "v6",
+  "build-depends" : [ ],
+  "provides" : {
+    "Algorithm::Trie::libdatrie" : "lib/Algorithm/Trie/libdatrie.pm6"
+  },
+  "depends" : [ ],
+  "description" : "blah blah blah",
+  "test-depends" : [ ],
+  "version" : "*",
+  "authors" : [
+    "zengargoyle"
+  ]
+}
