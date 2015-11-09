@@ -6,7 +6,7 @@ use NativeCall;
 
 =head1 NAME
 
-Algorithm::Trie::libdatrie - a character keyed trie using the L<datrie|http://linux.thai.net/~thep/datrie/datrie.html> library.
+Algorithm::Trie::libdatrie - a character keyed trie using the datrie library.
 
 =head1 SYNOPSIS
 
@@ -14,7 +14,7 @@ Algorithm::Trie::libdatrie - a character keyed trie using the L<datrie|http://li
 
   my Trie $t .= new: 'a'..'z', 'A'..'Z';
   my @words = <pool prize preview prepare produce progress>;
-  for @words:kv -> $data, $word {
+  for @words.kv -> $data, $word {
     $t.store( $word, $data );
   }
   $data = $t.retrieve($word);
@@ -23,6 +23,22 @@ Algorithm::Trie::libdatrie - a character keyed trie using the L<datrie|http://li
     $key = $iter.key;
     $data = $iter.value;
   }
+
+=head1 WARNING
+
+This is a work in progress (though with decent test coverage).  Some features
+are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
+
+You'll need C<libdatrie.so> available.  Debian has a C<libdatrie1> package.
+I had to manually make a soft-link to make NativeCall happy.
+
+    cd /usr/lib/x86_64-linux-gnu
+    ln -s libdatrie.so.1 libdatrie.so
+
+Don't know if there's another way to make NativeCall happy.
+
+More documentation and maybe a few more features and tests are planned.  For
+now the tests are probably the best documentation.  That and the F<trie_notes.h> file which contains some abbreviated information.
 
 =head1 DESCRIPTION
 
@@ -44,16 +60,16 @@ found at L<http://linux.thai.net/~thep/datrie/datrie.html>
 
 =end quote
 
-Trie: .store, .delete, .retrieve, .enumerate
+Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
 
-Trie.root --> TrieState: .walk, .rewind, .clone, trie_state_copy(),
-.is_walkable, .walkable_chars, .is_single, .value
+Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable,
+.walkable_chars, .is_single, .value
 
 Trie.iterator --> TrieIterator: .next, .key, .value.
 
 =end pod
 
-#| for freeing returned key from TrieIterator.key
+# for freeing returned key from TrieIterator.key
 sub free(CArray[uint32]) is native(Str) { * }
 
 class AlphaMap is repr('CPointer') { }
