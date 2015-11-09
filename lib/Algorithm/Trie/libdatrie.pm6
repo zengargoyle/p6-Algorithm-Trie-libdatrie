@@ -26,11 +26,15 @@ Algorithm::Trie::libdatrie - a character keyed trie using the datrie library.
 
 =head1 WARNING
 
+NOTE: There is no travis.ci for this project as it uses a library that travis.ci does not like: "Disallowing packages: libdatrie-dev".  Trust me, the tests pass on my box! :)
+
 This is a work in progress (though with decent test coverage).  Some features
 are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
 
-You'll need C<libdatrie.so> available.  Debian has a C<libdatrie1> package.
-I had to manually make a soft-link to make NativeCall happy.
+You'll need C<libdatrie.so> available.  Debian has a C<libdatrie1> package, but you need the C<libdatrie-dev> package to get the soft-link.
+
+Or, you can use C<libdatrie1> and manually make a soft-link to make
+NativeCall happy.
 
     cd /usr/lib/x86_64-linux-gnu
     ln -s libdatrie.so.1 libdatrie.so
