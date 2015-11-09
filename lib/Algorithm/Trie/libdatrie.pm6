@@ -57,8 +57,67 @@ Trie.iterator --> TrieIterator: .next, .key, .value.
 sub free(CArray[uint32]) is native(Str) { * }
 
 class AlphaMap is repr('CPointer') { }
-class TrieState is export is repr('CPointer') { }
 
+class TrieState is export is repr('CPointer') {
+
+  method clone() returns TrieState {
+    trie_state_clone(self) || fail 'could not clone';
+  }
+
+  # XXX: not implemented, use .clone instead
+  # sub copy(TriState $dst, Tristate $src) {
+  #   trie_state_copy($dst,$src);
+  # }
+
+  method free() {
+    trie_state_free(self);
+  }
+
+  method rewind() {
+    trie_state_rewind(self);
+  }
+
+  method walk(Str $c where *.chars == 1) returns Bool {
+    trie_state_walk(self, $c.ord) !== 0;
+  }
+
+  method is-walkable(Str $c where *.chars == 1) returns Bool {
+    trie_state_is_walkable(self, $c.ord) !== 0;
+  }
+
+  method walkable-chars() returns Array[Str] {
+    my $walkable = CArray[uint32].new;
+    $walkable[256] = 0;
+    trie_state_walkable_chars(self, $walkable, 256)
+      || fail 'could not get walkable chars';
+    my Str @w;
+    loop {
+      state $i = 0;
+      last if $walkable[$i] == 0;
+      @w.push: $walkable[$i++].chr;
+    }
+    @w;
+  }
+
+  # NOTE: is-terminal is MACRO (TRIE_CHAR_TERM = '\0'
+  method is-terminal() returns Bool {
+    trie_state_is_walkable(self, 0) !== 0;
+  }
+
+  method is-single() returns Bool {
+    trie_state_is_single(self) !== 0;
+  }
+
+  # NOTE: is-leaf is MACRO
+  method is-leaf() returns Bool {
+    self.is-single && self.is-terminal();
+  }
+
+  method value() returns Int {
+    Int( trie_state_get_data(self) );
+  }
+
+}
 
 class TrieIterator is export is repr('CPointer') {
 
@@ -136,7 +195,7 @@ class Trie is export is repr('CPointer') {
   }
 
   method root() returns TrieState {
-    trie_root(self) || fail 'state';
+    trie_root(self) || fail 'could not get root state';
   }
 
   method iterator() returns TrieIterator {
@@ -238,7 +297,46 @@ sub trie_iterator_get_data(TrieIterator) returns uint32
   is native('libdatrie')
   { * }
 
+#
+# TrieState
+#
 
+sub trie_state_clone(TrieState) returns TrieState
+  is native('libdatrie')
+  { * }
+
+# XXX: no copy, use clone
+# sub trie_state_copy(TrieState) returns TrieState
+#   is native('libdatrie')
+#   { * }
+
+sub trie_state_free(TrieState)
+  is native('libdatrie')
+  { * }
+
+sub trie_state_rewind(TrieState)
+  is native('libdatrie')
+  { * }
+
+sub trie_state_walk(TrieState,uint32) returns uint32
+  is native('libdatrie')
+  { * }
+
+sub trie_state_is_walkable(TrieState,uint32) returns uint32
+  is native('libdatrie')
+  { * }
+
+sub trie_state_walkable_chars(TrieState,CArray[uint32],uint32) returns uint32
+  is native('libdatrie')
+  { * }
+
+sub trie_state_is_single(TrieState) returns uint32
+  is native('libdatrie')
+  { * }
+
+sub trie_state_get_data(TrieState) returns uint32
+  is native('libdatrie')
+  { * }
 
 
 
