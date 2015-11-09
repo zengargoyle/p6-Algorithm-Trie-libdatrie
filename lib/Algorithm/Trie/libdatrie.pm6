@@ -63,7 +63,7 @@ found at L<http://linux.thai.net/~thep/datrie/datrie.html>
 Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
 
 Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable,
-.walkable_chars, .is_single, .value
+.walkable_chars, .is_single, .value, .is-terminal, .is-leaf
 
 Trie.iterator --> TrieIterator: .next, .key, .value.
 
