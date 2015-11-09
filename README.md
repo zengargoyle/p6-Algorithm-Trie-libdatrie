@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/zengargoyle/p6-Algorithm-Trie-libdatrie.svg?branch=master)](https://travis-ci.org/zengargoyle/p6-Algorithm-Trie-libdatrie)
-
 NAME
 ====
 
@@ -25,9 +23,13 @@ SYNOPSIS
 WARNING
 =======
 
+NOTE: There is no travis.ci for this project as it uses a library that travis.ci does not like: "Disallowing packages: libdatrie-dev". Trust me, the tests pass on my box! :)
+
 This is a work in progress (though with decent test coverage). Some features are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
 
-You'll need `libdatrie.so` available. Debian has a `libdatrie1` package. I had to manually make a soft-link to make NativeCall happy.
+You'll need `libdatrie.so` available. Debian has a `libdatrie1` package, but you need the `libdatrie-dev` package to get the soft-link.
+
+Or, you can use `libdatrie1` and manually make a soft-link to make NativeCall happy.
 
     cd /usr/lib/x86_64-linux-gnu
     ln -s libdatrie.so.1 libdatrie.so
@@ -52,7 +54,7 @@ This library is an implementation of double-array structure for representing tri
 
 Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
 
-Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable, .walkable_chars, .is_single, .value
+Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable, .walkable_chars, .is_single, .value, .is-terminal, .is-leaf
 
 Trie.iterator --> TrieIterator: .next, .key, .value.
 
