@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/zengargoyle/p6-Algorithm-Trie-libdatrie.svg?branch=master)](https://travis-ci.org/zengargoyle/p6-Algorithm-Trie-libdatrie)
+
 NAME
 ====
 
