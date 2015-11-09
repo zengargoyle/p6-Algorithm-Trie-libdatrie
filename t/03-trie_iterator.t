@@ -31,6 +31,8 @@ for @words.kv -> $index, $word {
 #
 
 my TrieIterator $i = $t.iterator;
+isa-ok $i, TrieIterator, 'got a TrieIterator';
+
 while $i.next {
   state (@keys, @values);
   @keys.push: $i.key;
