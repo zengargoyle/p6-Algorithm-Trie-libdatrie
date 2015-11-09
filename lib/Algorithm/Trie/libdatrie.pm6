@@ -109,9 +109,18 @@ class Trie is export is repr('CPointer') {
     trie_free(self);
   }
 
+  method is-dirty() {
+    trie_is_dirty(self);
+  }
+
   method store(Str $key, Int $data) returns Bool {
     my $c = CArray[uint32].new($key.ords, 0);
     trie_store(self, $c, $data) !== 0;
+  }
+
+  method store-if-absent(Str $key, Int $data) returns Bool {
+    my $c = CArray[uint32].new($key.ords, 0);
+    trie_store_if_absent(self, $c, $data) !== 0;
   }
 
   method retrieve(Str $key) returns Int {
@@ -176,6 +185,10 @@ sub trie_store(Trie,CArray[uint32],int32) returns int32
   is native('libdatrie')
   { * }
 
+sub trie_store_if_absent(Trie,CArray[uint32],int32) returns int32
+  is native('libdatrie')
+  { * }
+
 sub trie_delete(Trie,CArray[uint32]) returns int32
   is native('libdatrie')
   { * }
@@ -187,6 +200,23 @@ sub trie_retrieve(Trie,CArray[uint32],CArray[uint32]) returns int32
 sub trie_root(Trie) returns TrieState
   is native('libdatrie')
   { * }
+
+sub trie_is_dirty(Trie) returns uint32
+  is native('libdatrie')
+  { * }
+
+# TODO: callbacks into Perl 6 make brain hurt.
+# sub trie_enumerate(Trie,TrieEnumFunc,Pointer[void]) returns uint32
+#   is native('libdatrie')
+#   { * }
+
+# XXX: not implemented raw I/O via IO::Handle?
+# sub trie_fwrite(Trie,FILE) returns uint32
+#   is native('libdatrie')
+#   { * }
+# sub trie_fread(FILE) returns Trie
+#   is native('libdatrie')
+#   { * }
 
 #
 # TrieIterator
