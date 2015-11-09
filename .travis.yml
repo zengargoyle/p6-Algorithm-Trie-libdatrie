@@ -8,7 +8,7 @@ addons:
 install:
   - wget http://jklmnop.net/libdatrie_0.2.10.orig.tar.xz
   - tar xf libdatrie_0.2.10.orig.tar.xz
-  - cd libdatrie-0.2.10 && ./configure --prefix=$HOME/datrie && make install-exec && cd $HOME
+  - cd libdatrie-0.2.10 && ./configure --prefix=$HOME/datrie && make install-exec && cd ..
   - rakudobrew build-panda
   - panda --notests installdeps .
 script:
