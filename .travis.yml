@@ -1,16 +1,14 @@
 language: perl6
 perl6:
   - latest
-before-install:
-  - sudo ls -l /usr/lib
-  - sudo apt-get update -qq
-  - sudo apt-get install -y libdatrie1
-  - sudo ln -s /usr/lib/x86_64-linux-gnu/libdatrie.so.1 /usr/lib/x86_64-linux-gnu/libdatrie.so
-  - sudo ls -l /usr/lib/x86_64-linux-gnu/libdatrie*
+addons:
+  apt:
+    packages:
+      - libdatrie-dev
 install:
   - rakudobrew build-panda
   - panda --notests installdeps .
 script:
   - perl6 -MPanda::Builder -e 'Panda::Builder.build($*CWD)'
   - PERL6LIB=$PWD/blib/lib prove -e perl6 -vr t/
-sudo: true
+sudo: false
