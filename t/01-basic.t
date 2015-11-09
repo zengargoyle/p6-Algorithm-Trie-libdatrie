@@ -2,6 +2,7 @@ use v6;
 use Test;
 use Algorithm::Trie::libdatrie;
 
-pass "replace me";
+my Trie $t;
+isa-ok $t, Trie, 'got Trie';
 
 done-testing;

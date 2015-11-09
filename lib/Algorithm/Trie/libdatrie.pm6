@@ -58,7 +58,7 @@ sub free(CArray[uint32]) is native(Str) { * }
 class AlphaMap is repr('CPointer') { }
 
 
-class Trie is repr('CPointer') {
+class Trie is export is repr('CPointer') {
 
   multi method new(**@ranges) returns Trie {
     my AlphaMap $map = alpha_map_new();

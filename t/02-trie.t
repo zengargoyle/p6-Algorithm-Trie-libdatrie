@@ -4,14 +4,14 @@ use Algorithm::Trie::libdatrie;
 
 my Str @words = < pool prize preview prepare produce progress >;
 
-my Algorithm::Trie::libdatrie::Trie ($t, $n);
+my Trie ($t, $n);
 
 #
 # .new with character map
 #
 
 $t .= new: 'a'..'z';
-isa-ok $t, Algorithm::Trie::libdatrie::Trie, 'got a Trie';
+isa-ok $t, Trie, 'got a Trie';
 
 #
 # .store
