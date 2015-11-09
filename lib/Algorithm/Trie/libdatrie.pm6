@@ -53,10 +53,36 @@ Trie.iterator --> TrieIterator: .next, .key, .value.
 
 =end pod
 
+#| for freeing returned key from TrieIterator.key
 sub free(CArray[uint32]) is native(Str) { * }
 
 class AlphaMap is repr('CPointer') { }
+class TrieState is export is repr('CPointer') { }
 
+
+class TrieIterator is export is repr('CPointer') {
+
+  method new(TrieState $state) returns TrieIterator {
+    trie_iterator_new($state);
+  }
+
+  method next() returns Bool {
+    trie_iterator_next(self) !== 0;
+  }
+
+  method key() returns Str {
+    my Str $key;
+    my $k = trie_iterator_get_key(self) || fail 'could not get key';
+    loop { state $i = 0; last if $k[$i] == 0; $key ~= $k[$i++].chr }
+    free($k);
+    $key;
+  }
+
+  method value() returns Int {
+    Int( trie_iterator_get_data(self) );
+  }
+
+}
 
 class Trie is export is repr('CPointer') {
 
@@ -69,6 +95,18 @@ class Trie is export is repr('CPointer') {
     my $t = trie_new($map) || fail "could not create trie";
     alpha_map_free($map);
     return $t;
+  }
+
+  multi method new(Str $file) returns Trie {
+    trie_new_from_file($file) || fail "could not load trie from '$file'"
+  }
+  
+  method save(Str $file) returns Bool {
+    trie_save(self,$file) == 0 || fail "could not save trie to '$file'";
+  }
+
+  method free() {
+    trie_free(self);
   }
 
   method store(Str $key, Int $data) returns Bool {
@@ -88,25 +126,19 @@ class Trie is export is repr('CPointer') {
     trie_delete(self, $c) !== 0;
   }
 
-  multi method new(Str $file) returns Trie {
-    trie_new_from_file($file) || fail "could not load trie from '$file'"
-  }
-  
-  method save(Str $file) returns Bool {
-    trie_save(self,$file) == 0 || fail "could not save trie to '$file'";
+  method root() returns TrieState {
+    trie_root(self) || fail 'state';
   }
 
-  method free() {
-    trie_free(self);
+  method iterator() returns TrieIterator {
+    trie_iterator_new(trie_root(self));
   }
 
-  # method root() returns Trie::State {
-  #   trie_root(self) || fail 'state';
-  # }
-  # method iterator() returns Trie::Iterator {
-  #   Trie::Iterator.new(trie_root(self));
-  # }
 }
+
+#
+# AlphaMap
+#
 
 sub alpha_map_new() returns AlphaMap
   is native('libdatrie')
@@ -120,11 +152,19 @@ sub alpha_map_free(AlphaMap)
   is native('libdatrie')
   { * }
 
+#
+# Trie
+#
+
 sub trie_new(AlphaMap) returns Trie
   is native('libdatrie')
   { * }
 
 sub trie_new_from_file(Str) returns Trie
+  is native('libdatrie')
+  { * }
+
+sub trie_save(Trie,Str) returns int32
   is native('libdatrie')
   { * }
 
@@ -144,14 +184,29 @@ sub trie_retrieve(Trie,CArray[uint32],CArray[uint32]) returns int32
   is native('libdatrie')
   { * }
 
-sub trie_save(Trie,Str) returns int32
+sub trie_root(Trie) returns TrieState
   is native('libdatrie')
   { * }
 
-# sub trie_root(Trie) returns Trie::State
-#   is native('libdatrie')
-#   { * }
+#
+# TrieIterator
+#
 
+sub trie_iterator_new(TrieState) returns TrieIterator
+  is native('libdatrie')
+  { * }
+
+sub trie_iterator_next(TrieIterator) returns Bool
+  is native('libdatrie')
+  { * }
+
+sub trie_iterator_get_key(TrieIterator) returns CArray[uint32]
+  is native('libdatrie')
+  { * }
+
+sub trie_iterator_get_data(TrieIterator) returns uint32
+  is native('libdatrie')
+  { * }
 
 
 
