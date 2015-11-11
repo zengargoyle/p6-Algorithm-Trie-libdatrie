@@ -1,6 +1,13 @@
 use v6;
 unit class Algorithm::Trie::libdatrie;
 use NativeCall;
+use LibraryMake;
+use Find::Bundled;
+
+sub library {
+  my $so = get-vars('')<SO>;
+  return Find::Bundled.find("libdatrie$so", "", :throw);
+}
 
 =begin pod
 
@@ -229,15 +236,15 @@ class Trie is export is repr('CPointer') {
 #
 
 sub alpha_map_new() returns AlphaMap
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub alpha_map_add_range(AlphaMap,int32,int32) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub alpha_map_free(AlphaMap)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 #
@@ -245,56 +252,56 @@ sub alpha_map_free(AlphaMap)
 #
 
 sub trie_new(AlphaMap) returns Trie
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_new_from_file(Str) returns Trie
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_save(Trie,Str) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_free(Trie)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_store(Trie,CArray[uint32],int32) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_store_if_absent(Trie,CArray[uint32],int32) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_delete(Trie,CArray[uint32]) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_retrieve(Trie,CArray[uint32],CArray[uint32]) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_root(Trie) returns TrieState
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_is_dirty(Trie) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 # TODO: callbacks into Perl 6 make brain hurt.
 # sub trie_enumerate(Trie,TrieEnumFunc,Pointer[void]) returns uint32
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 
 # XXX: not implemented raw I/O via IO::Handle?
 # sub trie_fwrite(Trie,FILE) returns uint32
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 # sub trie_fread(FILE) returns Trie
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 
 #
@@ -302,19 +309,19 @@ sub trie_is_dirty(Trie) returns uint32
 #
 
 sub trie_iterator_new(TrieState) returns TrieIterator
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_iterator_next(TrieIterator) returns Bool
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_iterator_get_key(TrieIterator) returns CArray[uint32]
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_iterator_get_data(TrieIterator) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 #
@@ -322,40 +329,40 @@ sub trie_iterator_get_data(TrieIterator) returns uint32
 #
 
 sub trie_state_clone(TrieState) returns TrieState
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 # XXX: no copy, use clone
 # sub trie_state_copy(TrieState) returns TrieState
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 
 sub trie_state_free(TrieState)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_rewind(TrieState)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_walk(TrieState,uint32) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_is_walkable(TrieState,uint32) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_walkable_chars(TrieState,CArray[uint32],uint32) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_is_single(TrieState) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_get_data(TrieState) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 
