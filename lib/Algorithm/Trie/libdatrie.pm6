@@ -24,23 +24,8 @@ Algorithm::Trie::libdatrie - a character keyed trie using the datrie library.
 
 =head1 WARNING
 
-NOTE: There is no travis.ci for this project as it uses a library that travis.ci does not like: "Disallowing packages: libdatrie-dev".  Trust me, the tests pass on my box! :)
-
-This is a work in progress (though with decent test coverage).  Some features
-are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
-
-You'll need C<libdatrie.so> available.  Debian has a C<libdatrie1> package, but you need the C<libdatrie-dev> package to get the soft-link.
-
-Or, you can use C<libdatrie1> and manually make a soft-link to make
-NativeCall happy.
-
-    cd /usr/lib/x86_64-linux-gnu
-    ln -s libdatrie.so.1 libdatrie.so
-
-Don't know if there's another way to make NativeCall happy.
-
 More documentation and maybe a few more features and tests are planned.  For
-now the tests are probably the best documentation.  That and the F<trie_notes.h> file which contains some abbreviated information.
+now the tests are probably the best documentation.
 
 =head1 DESCRIPTION
 
@@ -69,7 +54,7 @@ found at L<http://linux.thai.net/~thep/datrie/datrie.html>
   multi method new(**@ranges) returns Trie
   multi method new(Str $file) returns Trie
   method save(Str $file) returns Bool
-  method is-dirty()
+  method is-dirty() returns Bool
   method store(Str $key, Int $data) returns Bool
   method store-if-absent(Str $key, Int $data) returns Bool
   method retrieve(Str $key) returns Int
@@ -82,7 +67,33 @@ found at L<http://linux.thai.net/~thep/datrie/datrie.html>
   method enumerate(&enum_func, Pointer[void] $stash) returns Bool
   */
 
+=item new
+
+  my Trie $t .= new: 'a'..'z', 'A'..'Z', '0'..'9';
+
+The set of characters used in C<key>s has a maximum size of 255.  The
+characters themselves may be any unicode character who's code will fit in a
+32 bit uint.  The C<new> function will map the input ranges into C<0..254>
+internally.
+
+  my Trie $t .= new: $file;
+
+A Trie may be loaded from a R<$file> created by the C<save> method.
+
+=item root, iterator
+
+These methods return objects of class C<TrieState> and C<TrieIterator> that
+are positioned at the root of the Trie.
+
+=item the rest
+
+Should be mostly self-explanatory.  See the tests.
+
 =head2 TrieState
+
+A TrieState object is used to walk through the Trie character by character.
+A TrieState object may also be used to create a TrieIterator in order to
+iterate over the nodes beneath the TrieStat's current position.
 
   method clone() returns TrieState
   method rewind()
@@ -96,6 +107,9 @@ found at L<http://linux.thai.net/~thep/datrie/datrie.html>
   method free()
 
 =head2 TrieIterator
+
+A TrieIterator can be created from the Trie directly via C<$trie.iterator>
+or from a TrieState via C<TrieIterator.new($trie-state)>.
 
   method new(TrieState $state) returns TrieIterator
   method next() returns Bool

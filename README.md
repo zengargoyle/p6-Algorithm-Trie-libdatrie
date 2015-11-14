@@ -25,20 +25,7 @@ SYNOPSIS
 WARNING
 =======
 
-NOTE: There is no travis.ci for this project as it uses a library that travis.ci does not like: "Disallowing packages: libdatrie-dev". Trust me, the tests pass on my box! :)
-
-This is a work in progress (though with decent test coverage). Some features are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
-
-You'll need `libdatrie.so` available. Debian has a `libdatrie1` package, but you need the `libdatrie-dev` package to get the soft-link.
-
-Or, you can use `libdatrie1` and manually make a soft-link to make NativeCall happy.
-
-    cd /usr/lib/x86_64-linux-gnu
-    ln -s libdatrie.so.1 libdatrie.so
-
-Don't know if there's another way to make NativeCall happy.
-
-More documentation and maybe a few more features and tests are planned. For now the tests are probably the best documentation. That and the trie_notes.h file which contains some abbreviated information.
+More documentation and maybe a few more features and tests are planned. For now the tests are probably the best documentation.
 
 DESCRIPTION
 ===========
@@ -58,7 +45,7 @@ Trie
     multi method new(**@ranges) returns Trie
     multi method new(Str $file) returns Trie
     method save(Str $file) returns Bool
-    method is-dirty()
+    method is-dirty() returns Bool
     method store(Str $key, Int $data) returns Bool
     method store-if-absent(Str $key, Int $data) returns Bool
     method retrieve(Str $key) returns Int
@@ -71,8 +58,28 @@ Trie
     method enumerate(&enum_func, Pointer[void] $stash) returns Bool
     */
 
+  * new
+
+    my Trie $t .= new: 'a'..'z', 'A'..'Z', '0'..'9';
+
+The set of characters used in `key`s has a maximum size of 255. The characters themselves may be any unicode character who's code will fit in a 32 bit uint. The `new` function will map the input ranges into `0..254` internally.
+
+    my Trie $t .= new: $file;
+
+A Trie may be loaded from a <var>$file</var> created by the `save` method.
+
+  * root, iterator
+
+These methods return objects of class `TrieState` and `TrieIterator` that are positioned at the root of the Trie.
+
+  * the rest
+
+Should be mostly self-explanatory. See the tests.
+
 TrieState
 ---------
+
+A TrieState object is used to walk through the Trie character by character. A TrieState object may also be used to create a TrieIterator in order to iterate over the nodes beneath the TrieStat's current position.
 
     method clone() returns TrieState
     method rewind()
@@ -87,6 +94,8 @@ TrieState
 
 TrieIterator
 ------------
+
+A TrieIterator can be created from the Trie directly via `$trie.iterator` or from a TrieState via `TrieIterator.new($trie-state)`.
 
     method new(TrieState $state) returns TrieIterator
     method next() returns Bool
