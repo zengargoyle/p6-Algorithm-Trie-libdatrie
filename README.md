@@ -47,18 +47,52 @@ Algorithm::Trie::libdatrie is an implementation of a character keyed [trie](http
 
 As the author of the datrie library states:
 
-quote
-=====
+Trie is a kind of digital search tree, an efficient indexing method with O(1) time complexity for searching. Comparably as efficient as hashing, trie also provides flexibility on incremental matching and key spelling manipulation. This makes it ideal for lexical analyzers, as well as spelling dictionaries. This library is an implementation of double-array structure for representing trie, as proposed by Junichi Aoe. The details of the implementation can be found at [http://linux.thai.net/~thep/datrie/datrie.html](http://linux.thai.net/~thep/datrie/datrie.html)
 
-Trie is a kind of digital search tree, an efficient indexing method with O(1) time complexity for searching. Comparably as efficient as hashing, trie also provides flexibility on incremental matching and key spelling manipulation. This makes it ideal for lexical analyzers, as well as spelling dictionaries.
+Classes and Methods
+===================
 
-This library is an implementation of double-array structure for representing trie, as proposed by Junichi Aoe. The details of the implementation can be found at [http://linux.thai.net/~thep/datrie/datrie.html](http://linux.thai.net/~thep/datrie/datrie.html)
+Trie
+----
 
-Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
+    multi method new(**@ranges) returns Trie
+    multi method new(Str $file) returns Trie
+    method save(Str $file) returns Bool
+    method is-dirty()
+    method store(Str $key, Int $data) returns Bool
+    method store-if-absent(Str $key, Int $data) returns Bool
+    method retrieve(Str $key) returns Int
+    method delete(Str $key) returns Bool
+    method root() returns TrieState
+    method iterator() returns TrieIterator
+    method free()
+    /* NYI
+    sub enum_func(Str $key, Int $value, Pointer[void] $stash) returns Bool { * }
+    method enumerate(&enum_func, Pointer[void] $stash) returns Bool
+    */
 
-Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable, .walkable_chars, .is_single, .value, .is-terminal, .is-leaf
+TrieState
+---------
 
-Trie.iterator --> TrieIterator: .next, .key, .value.
+    method clone() returns TrieState
+    method rewind()
+    method walk(Str $c where *.chars == 1) returns Bool
+    method is-walkable(Str $c where *.chars == 1) returns Bool
+    method walkable-chars() returns Array[Str]
+    method is-terminal() returns Bool
+    method is-single() returns Bool
+    method is-leaf() returns Bool
+    method value() returns Int
+    method free()
+
+TrieIterator
+------------
+
+    method new(TrieState $state) returns TrieIterator
+    method next() returns Bool
+    method key() returns Str
+    method value() returns Int
+    method free()
 
 SEE ALSO
 ========
@@ -78,4 +112,3 @@ COPYRIGHT AND LICENSE
 Copyright 2015 zengargoyle
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
-

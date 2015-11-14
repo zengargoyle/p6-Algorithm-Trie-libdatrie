@@ -1,13 +1,4 @@
 use v6;
-unit class Algorithm::Trie::libdatrie;
-use NativeCall;
-use LibraryMake;
-use Find::Bundled;
-
-sub library {
-  my $so = get-vars('')<SO>;
-  return Find::Bundled.find("libdatrie$so", "", :throw);
-}
 
 =begin pod
 
@@ -57,7 +48,7 @@ Algorithm::Trie::libdatrie is an implementation of a character keyed L<trie|http
 
 As the author of the datrie library states:
 
-=begin quote
+=begin para :nested
 
 Trie is a kind of digital search tree, an efficient indexing method with
 O(1) time complexity for searching. Comparably as efficient as hashing,
@@ -69,16 +60,60 @@ This library is an implementation of double-array structure for representing
 trie, as proposed by Junichi Aoe. The details of the implementation can be
 found at L<http://linux.thai.net/~thep/datrie/datrie.html>
 
-=end quote
+=end para
 
-Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
+=head1 Classes and Methods
 
-Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable,
-.walkable_chars, .is_single, .value, .is-terminal, .is-leaf
+=head2 Trie
 
-Trie.iterator --> TrieIterator: .next, .key, .value.
+  multi method new(**@ranges) returns Trie
+  multi method new(Str $file) returns Trie
+  method save(Str $file) returns Bool
+  method is-dirty()
+  method store(Str $key, Int $data) returns Bool
+  method store-if-absent(Str $key, Int $data) returns Bool
+  method retrieve(Str $key) returns Int
+  method delete(Str $key) returns Bool
+  method root() returns TrieState
+  method iterator() returns TrieIterator
+  method free()
+  /* NYI
+  sub enum_func(Str $key, Int $value, Pointer[void] $stash) returns Bool { * }
+  method enumerate(&enum_func, Pointer[void] $stash) returns Bool
+  */
+
+=head2 TrieState
+
+  method clone() returns TrieState
+  method rewind()
+  method walk(Str $c where *.chars == 1) returns Bool
+  method is-walkable(Str $c where *.chars == 1) returns Bool
+  method walkable-chars() returns Array[Str]
+  method is-terminal() returns Bool
+  method is-single() returns Bool
+  method is-leaf() returns Bool
+  method value() returns Int
+  method free()
+
+=head2 TrieIterator
+
+  method new(TrieState $state) returns TrieIterator
+  method next() returns Bool
+  method key() returns Str
+  method value() returns Int
+  method free()
 
 =end pod
+
+unit class Algorithm::Trie::libdatrie;
+use NativeCall;
+use LibraryMake;
+use Find::Bundled;
+
+sub library {
+  my $so = get-vars('')<SO>;
+  return Find::Bundled.find("libdatrie$so", "", :throw);
+}
 
 # for freeing returned key from TrieIterator.key
 sub free(CArray[uint32]) is native(Str) { * }
@@ -166,6 +201,10 @@ class TrieIterator is export is repr('CPointer') {
 
   method value() returns Int {
     Int( trie_iterator_get_data(self) );
+  }
+
+  method free() {
+    trie_iterator_free(self);
   }
 
 }
@@ -324,6 +363,10 @@ sub trie_iterator_get_data(TrieIterator) returns uint32
   is native(&library)
   { * }
 
+sub trie_iterator_free(TrieIterator)
+  is native(&library)
+  { * }
+
 #
 # TrieState
 #
@@ -364,9 +407,6 @@ sub trie_state_is_single(TrieState) returns uint32
 sub trie_state_get_data(TrieState) returns uint32
   is native(&library)
   { * }
-
-
-
 
 
 =begin pod

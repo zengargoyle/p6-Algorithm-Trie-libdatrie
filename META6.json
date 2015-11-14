@@ -6,7 +6,11 @@
   "provides" : {
     "Algorithm::Trie::libdatrie" : "lib/Algorithm/Trie/libdatrie.pm6"
   },
-  "depends" : [ "LibraryCheck", "LibraryMake", "Find::Bundled" ],
+  "depends" : [
+    "LibraryCheck",
+    "LibraryMake",
+    "Find::Bundled"
+  ],
   "description" : "a character keyed trie using the datrie library.",
   "test-depends" : [
     "File::Temp"
