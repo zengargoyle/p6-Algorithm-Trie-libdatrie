@@ -1,6 +1,4 @@
 use v6;
-unit class Algorithm::Trie::libdatrie;
-use NativeCall;
 
 =begin pod
 
@@ -26,23 +24,8 @@ Algorithm::Trie::libdatrie - a character keyed trie using the datrie library.
 
 =head1 WARNING
 
-NOTE: There is no travis.ci for this project as it uses a library that travis.ci does not like: "Disallowing packages: libdatrie-dev".  Trust me, the tests pass on my box! :)
-
-This is a work in progress (though with decent test coverage).  Some features
-are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
-
-You'll need C<libdatrie.so> available.  Debian has a C<libdatrie1> package, but you need the C<libdatrie-dev> package to get the soft-link.
-
-Or, you can use C<libdatrie1> and manually make a soft-link to make
-NativeCall happy.
-
-    cd /usr/lib/x86_64-linux-gnu
-    ln -s libdatrie.so.1 libdatrie.so
-
-Don't know if there's another way to make NativeCall happy.
-
 More documentation and maybe a few more features and tests are planned.  For
-now the tests are probably the best documentation.  That and the F<trie_notes.h> file which contains some abbreviated information.
+now the tests are probably the best documentation.
 
 =head1 DESCRIPTION
 
@@ -50,7 +33,7 @@ Algorithm::Trie::libdatrie is an implementation of a character keyed L<trie|http
 
 As the author of the datrie library states:
 
-=begin quote
+=begin para :nested
 
 Trie is a kind of digital search tree, an efficient indexing method with
 O(1) time complexity for searching. Comparably as efficient as hashing,
@@ -62,16 +45,89 @@ This library is an implementation of double-array structure for representing
 trie, as proposed by Junichi Aoe. The details of the implementation can be
 found at L<http://linux.thai.net/~thep/datrie/datrie.html>
 
-=end quote
+=end para
 
-Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
+=head1 Classes and Methods
 
-Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable,
-.walkable_chars, .is_single, .value, .is-terminal, .is-leaf
+=head2 Trie
 
-Trie.iterator --> TrieIterator: .next, .key, .value.
+  multi method new(**@ranges) returns Trie
+  multi method new(Str $file) returns Trie
+  method save(Str $file) returns Bool
+  method is-dirty() returns Bool
+  method store(Str $key, Int $data) returns Bool
+  method store-if-absent(Str $key, Int $data) returns Bool
+  method retrieve(Str $key) returns Int
+  method delete(Str $key) returns Bool
+  method root() returns TrieState
+  method iterator() returns TrieIterator
+  method free()
+  /* NYI
+  sub enum_func(Str $key, Int $value, Pointer[void] $stash) returns Bool { * }
+  method enumerate(&enum_func, Pointer[void] $stash) returns Bool
+  */
+
+=item new
+
+  my Trie $t .= new: 'a'..'z', 'A'..'Z', '0'..'9';
+
+The set of characters used in C<key>s has a maximum size of 255.  The
+characters themselves may be any unicode character who's code will fit in a
+32 bit uint.  The C<new> function will map the input ranges into C<0..254>
+internally.
+
+  my Trie $t .= new: $file;
+
+A Trie may be loaded from a R<$file> created by the C<save> method.
+
+=item root, iterator
+
+These methods return objects of class C<TrieState> and C<TrieIterator> that
+are positioned at the root of the Trie.
+
+=item the rest
+
+Should be mostly self-explanatory.  See the tests.
+
+=head2 TrieState
+
+A TrieState object is used to walk through the Trie character by character.
+A TrieState object may also be used to create a TrieIterator in order to
+iterate over the nodes beneath the TrieStat's current position.
+
+  method clone() returns TrieState
+  method rewind()
+  method walk(Str $c where *.chars == 1) returns Bool
+  method is-walkable(Str $c where *.chars == 1) returns Bool
+  method walkable-chars() returns Array[Str]
+  method is-terminal() returns Bool
+  method is-single() returns Bool
+  method is-leaf() returns Bool
+  method value() returns Int
+  method free()
+
+=head2 TrieIterator
+
+A TrieIterator can be created from the Trie directly via C<$trie.iterator>
+or from a TrieState via C<TrieIterator.new($trie-state)>.
+
+  method new(TrieState $state) returns TrieIterator
+  method next() returns Bool
+  method key() returns Str
+  method value() returns Int
+  method free()
 
 =end pod
+
+unit class Algorithm::Trie::libdatrie;
+use NativeCall;
+use LibraryMake;
+use Find::Bundled;
+
+sub library {
+  my $so = get-vars('')<SO>;
+  return Find::Bundled.find("libdatrie$so", "", :throw);
+}
 
 # for freeing returned key from TrieIterator.key
 sub free(CArray[uint32]) is native(Str) { * }
@@ -161,6 +217,10 @@ class TrieIterator is export is repr('CPointer') {
     Int( trie_iterator_get_data(self) );
   }
 
+  method free() {
+    trie_iterator_free(self);
+  }
+
 }
 
 class Trie is export is repr('CPointer') {
@@ -229,15 +289,15 @@ class Trie is export is repr('CPointer') {
 #
 
 sub alpha_map_new() returns AlphaMap
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub alpha_map_add_range(AlphaMap,int32,int32) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub alpha_map_free(AlphaMap)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 #
@@ -245,56 +305,56 @@ sub alpha_map_free(AlphaMap)
 #
 
 sub trie_new(AlphaMap) returns Trie
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_new_from_file(Str) returns Trie
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_save(Trie,Str) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_free(Trie)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_store(Trie,CArray[uint32],int32) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_store_if_absent(Trie,CArray[uint32],int32) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_delete(Trie,CArray[uint32]) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_retrieve(Trie,CArray[uint32],CArray[uint32]) returns int32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_root(Trie) returns TrieState
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_is_dirty(Trie) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 # TODO: callbacks into Perl 6 make brain hurt.
 # sub trie_enumerate(Trie,TrieEnumFunc,Pointer[void]) returns uint32
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 
 # XXX: not implemented raw I/O via IO::Handle?
 # sub trie_fwrite(Trie,FILE) returns uint32
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 # sub trie_fread(FILE) returns Trie
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 
 #
@@ -302,19 +362,23 @@ sub trie_is_dirty(Trie) returns uint32
 #
 
 sub trie_iterator_new(TrieState) returns TrieIterator
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_iterator_next(TrieIterator) returns Bool
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_iterator_get_key(TrieIterator) returns CArray[uint32]
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_iterator_get_data(TrieIterator) returns uint32
-  is native('libdatrie')
+  is native(&library)
+  { * }
+
+sub trie_iterator_free(TrieIterator)
+  is native(&library)
   { * }
 
 #
@@ -322,44 +386,41 @@ sub trie_iterator_get_data(TrieIterator) returns uint32
 #
 
 sub trie_state_clone(TrieState) returns TrieState
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 # XXX: no copy, use clone
 # sub trie_state_copy(TrieState) returns TrieState
-#   is native('libdatrie')
+#   is native(&library)
 #   { * }
 
 sub trie_state_free(TrieState)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_rewind(TrieState)
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_walk(TrieState,uint32) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_is_walkable(TrieState,uint32) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_walkable_chars(TrieState,CArray[uint32],uint32) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_is_single(TrieState) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
 
 sub trie_state_get_data(TrieState) returns uint32
-  is native('libdatrie')
+  is native(&library)
   { * }
-
-
-
 
 
 =begin pod

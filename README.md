@@ -25,20 +25,7 @@ SYNOPSIS
 WARNING
 =======
 
-NOTE: There is no travis.ci for this project as it uses a library that travis.ci does not like: "Disallowing packages: libdatrie-dev". Trust me, the tests pass on my box! :)
-
-This is a work in progress (though with decent test coverage). Some features are not implemented (fread, fwrite, enumerate, ...) because they seem unnecesary for Perl 6, or I just don't have the NativeCall mojo yet.
-
-You'll need `libdatrie.so` available. Debian has a `libdatrie1` package, but you need the `libdatrie-dev` package to get the soft-link.
-
-Or, you can use `libdatrie1` and manually make a soft-link to make NativeCall happy.
-
-    cd /usr/lib/x86_64-linux-gnu
-    ln -s libdatrie.so.1 libdatrie.so
-
-Don't know if there's another way to make NativeCall happy.
-
-More documentation and maybe a few more features and tests are planned. For now the tests are probably the best documentation. That and the trie_notes.h file which contains some abbreviated information.
+More documentation and maybe a few more features and tests are planned. For now the tests are probably the best documentation.
 
 DESCRIPTION
 ===========
@@ -47,18 +34,74 @@ Algorithm::Trie::libdatrie is an implementation of a character keyed [trie](http
 
 As the author of the datrie library states:
 
-quote
-=====
+Trie is a kind of digital search tree, an efficient indexing method with O(1) time complexity for searching. Comparably as efficient as hashing, trie also provides flexibility on incremental matching and key spelling manipulation. This makes it ideal for lexical analyzers, as well as spelling dictionaries. This library is an implementation of double-array structure for representing trie, as proposed by Junichi Aoe. The details of the implementation can be found at [http://linux.thai.net/~thep/datrie/datrie.html](http://linux.thai.net/~thep/datrie/datrie.html)
 
-Trie is a kind of digital search tree, an efficient indexing method with O(1) time complexity for searching. Comparably as efficient as hashing, trie also provides flexibility on incremental matching and key spelling manipulation. This makes it ideal for lexical analyzers, as well as spelling dictionaries.
+Classes and Methods
+===================
 
-This library is an implementation of double-array structure for representing trie, as proposed by Junichi Aoe. The details of the implementation can be found at [http://linux.thai.net/~thep/datrie/datrie.html](http://linux.thai.net/~thep/datrie/datrie.html)
+Trie
+----
 
-Trie: .store, .store-if-absent, .delete, .retrieve, .save, .is-dirty
+    multi method new(**@ranges) returns Trie
+    multi method new(Str $file) returns Trie
+    method save(Str $file) returns Bool
+    method is-dirty() returns Bool
+    method store(Str $key, Int $data) returns Bool
+    method store-if-absent(Str $key, Int $data) returns Bool
+    method retrieve(Str $key) returns Int
+    method delete(Str $key) returns Bool
+    method root() returns TrieState
+    method iterator() returns TrieIterator
+    method free()
+    /* NYI
+    sub enum_func(Str $key, Int $value, Pointer[void] $stash) returns Bool { * }
+    method enumerate(&enum_func, Pointer[void] $stash) returns Bool
+    */
 
-Trie.root --> TrieState: .walk, .rewind, .clone, .is_walkable, .walkable_chars, .is_single, .value, .is-terminal, .is-leaf
+  * new
 
-Trie.iterator --> TrieIterator: .next, .key, .value.
+    my Trie $t .= new: 'a'..'z', 'A'..'Z', '0'..'9';
+
+The set of characters used in `key`s has a maximum size of 255. The characters themselves may be any unicode character who's code will fit in a 32 bit uint. The `new` function will map the input ranges into `0..254` internally.
+
+    my Trie $t .= new: $file;
+
+A Trie may be loaded from a <var>$file</var> created by the `save` method.
+
+  * root, iterator
+
+These methods return objects of class `TrieState` and `TrieIterator` that are positioned at the root of the Trie.
+
+  * the rest
+
+Should be mostly self-explanatory. See the tests.
+
+TrieState
+---------
+
+A TrieState object is used to walk through the Trie character by character. A TrieState object may also be used to create a TrieIterator in order to iterate over the nodes beneath the TrieStat's current position.
+
+    method clone() returns TrieState
+    method rewind()
+    method walk(Str $c where *.chars == 1) returns Bool
+    method is-walkable(Str $c where *.chars == 1) returns Bool
+    method walkable-chars() returns Array[Str]
+    method is-terminal() returns Bool
+    method is-single() returns Bool
+    method is-leaf() returns Bool
+    method value() returns Int
+    method free()
+
+TrieIterator
+------------
+
+A TrieIterator can be created from the Trie directly via `$trie.iterator` or from a TrieState via `TrieIterator.new($trie-state)`.
+
+    method new(TrieState $state) returns TrieIterator
+    method next() returns Bool
+    method key() returns Str
+    method value() returns Int
+    method free()
 
 SEE ALSO
 ========
@@ -78,4 +121,3 @@ COPYRIGHT AND LICENSE
 Copyright 2015 zengargoyle
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
-
