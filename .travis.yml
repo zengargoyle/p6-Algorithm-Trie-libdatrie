@@ -10,4 +10,4 @@ install:
   - panda --notests installdeps .
   - panda-build
 script:
-  - PERL6LIB=$PWD/blib/lib prove -e perl6 -vr t/
+  - PERL6LIB=lib prove -e perl6 -vr t/
