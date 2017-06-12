@@ -9,7 +9,6 @@
     "Algorithm::Trie::libdatrie" : "lib/Algorithm/Trie/libdatrie.pm6"
   },
   "build-depends" : [
-    "panda",
     "LibraryMake",
     "Shell::Command"
   ],
