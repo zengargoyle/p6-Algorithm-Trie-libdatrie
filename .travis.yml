@@ -8,5 +8,3 @@ perl6:
 install:
   - rakudobrew build zef
   - zef install .
-script:
-  - echo hello
