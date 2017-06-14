@@ -21,7 +21,10 @@
     "lib/libdatrie.so"
   ],
   "source-url" : "git://github.com/zengargoyle/p6-Algorithm-Trie-libdatrie.git",
-  "tags" : [ ],
+  "tags" : [
+    "text",
+    "trie"
+  ],
   "test-depends" : [
     "Test",
     "File::Temp"
