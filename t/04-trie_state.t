@@ -32,7 +32,7 @@ isa-ok $s, TrieState, 'got TrieState';
 
 ok $s.is-walkable('p'), "can walk to 'p'";
 ok $s.walk('p'), "walked to 'p'";
-is $s.walkable-chars.Set, <o r>.Set, "can walk to 'o','r'";
+is-deeply $s.walkable-chars.Set, <o r>.Set, "can walk to 'o','r'";
 
 my TrieState $r = $s.clone;
 isa-ok $r, TrieState, "made a clone at 'p'";
@@ -47,7 +47,7 @@ is $r.value, 0, "got data at 'pool'";
 $r = $s.clone;
 isa-ok $r, TrieState, "made another clone at 'p'";
 ok $r.walk('r'), "walked to 'r'";
-is $r.walkable-chars.Set, <e i o>.Set, "can walk to 'e', 'i', 'o'";
+is-deeply $r.walkable-chars.Set, <e i o>.Set, "can walk to 'e', 'i', 'o'";
 ok $r.walk('i'), "walked to 'i'";
 ok $r.walk('z'), "walked to 'z'";
 ok $r.is-single, "state at 'priz' is single";
@@ -66,7 +66,7 @@ while $i.next {
   state @tails;
   @tails.push: $i.key;
   LAST {
-    is @tails, <ool repare review rize roduce rogress>.Array,
+    is-deeply @tails, <ool repare review rize roduce rogress>.Array,
       "got tails through iteration";
   }
 }
